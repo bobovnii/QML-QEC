@@ -14,7 +14,6 @@
 #     total_iterations += 1
 
 
-
 # from qenv import Denoiser
 # import json
 # import numpy as np
@@ -29,7 +28,6 @@
 # psi = [1, 0]
 # theta = [(np.pi / 4, 0, 0)]
 # print(denoiser.get_dist(psi, theta))
-
 
 
 from qenv import Compare
