@@ -18,10 +18,16 @@ from sklearn.metrics import make_scorer
 
 class Compare:
     def __init__(self, seed=8):
-        self.models = []
-        self.results = []
-        self.names = []
+        self.models = list()
+        self.results = list()
+        self.names = list()
         self.seed = seed
+        self.scoring = make_scorer(self.performance_metric)
+
+    def _reset(self):
+        self.models = list()
+        self.results = list()
+        self.names = list()
         self.scoring = make_scorer(self.performance_metric)
 
     def performance_metric(self, y_true, y_predict):
@@ -29,7 +35,7 @@ class Compare:
         score = r2_score(y_true, y_predict)
         return score
 
-    def run(self, X=None, Y=None, plot=False):
+    def run(self, X=None, Y=None, n_splits_val=3, plot=False):
         """
         Mock Data
         X:= list of qubit state input,output pairs [input0,input1,output0,output1],
@@ -41,6 +47,8 @@ class Compare:
                 ['QFT', [0,1], [0,1], 0],
                 ['QFT', [0.5,0.5], [0,1], 0]]
         """
+        self._reset()
+
         if X is None:
             X = [
                 [0, 1, 0, 0.99],
@@ -56,7 +64,7 @@ class Compare:
 
         self.set_models({})
 
-        self.compare_scores(3, self.models, X, Y)
+        self.compare_scores(n_splits_val, self.models, X, Y)
 
         if plot:
             # boxplot algorithm comparison
