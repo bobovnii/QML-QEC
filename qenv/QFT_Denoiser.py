@@ -5,6 +5,7 @@ from qiskit.tools.visualization import plot_histogram
 from qiskit.providers.ibmq.exceptions import IBMQAccountError
 import math
 
+
 class Denoiser():
     def __init__(self, n, APIkey):
         self.n = n
