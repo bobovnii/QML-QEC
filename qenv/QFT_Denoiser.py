@@ -7,6 +7,18 @@ import math
 
 
 class Denoiser():
+    '''
+        Initialize class as:
+            denoiser = Denoiser(n, APIKEY)
+                where n is the number of qubits, APIKEY is your key from your ibmq experience account
+        Run the circuit using:
+            denoiser.get_dist(psi, theta)
+                which returns the probability distribution of the final state as a list of probabilities
+                    for each basis state, ordered numerically according to its binary representation, and
+                where psi is the input state in the same format as above, e.g. [1,0,0,0] for two qubits,
+                    and theta are the parameters to the denoiser circuit, as a list of tuples (x, y, z)
+                    specifiying the unitary correction, one tuple for each qubit
+    '''
     def __init__(self, n, APIkey):
         self.n = n
 
@@ -58,7 +70,6 @@ class Denoiser():
 
         counts = result.get_counts()
         for i in range(2**self.n):
-            print("{{0:0{0}b}}".format(self.n).format(i))
             if "{{0:0{0}b}}".format(self.n).format(i) not in counts:
                 counts["{{0:0{0}b}}".format(self.n).format(i)] = 0
 
