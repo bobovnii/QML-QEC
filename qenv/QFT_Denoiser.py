@@ -56,10 +56,11 @@ class Denoiser():
         else:
             result = execute(self.qc, self.simulator, shots=shots).result()
 
-        counts = dict()
-        for i in range(self.n):
-            counts["{{0:{0}b}}".format(self.n).format(i)] = 0
         counts = result.get_counts()
+        for i in range(2**self.n):
+            print("{{0:0{0}b}}".format(self.n).format(i))
+            if "{{0:0{0}b}}".format(self.n).format(i) not in counts:
+                counts["{{0:0{0}b}}".format(self.n).format(i)] = 0
 
         return [value/shots for (key, value) in sorted(counts.items())]
 
