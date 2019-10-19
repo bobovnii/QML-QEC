@@ -8,15 +8,6 @@ import math
 class Denoiser():
     def __init__(self, n, APIkey):
         self.n = n
-        self.q = QuantumRegister(n)
-        self.c = ClassicalRegister(n)
-        self.qc = QuantumCircuit(self.q, self.c)
-
-        self._qft_inv()
-
-        # Select the statevector simulator for noise-free simulation
-        simulator = Aer.get_backend('statevector_simulator')
-        self.psi = execute(self.qc, simulator).result().get_statevector()
 
         # Load IBMQ backend used for noise modeling
         try:
@@ -33,8 +24,21 @@ class Denoiser():
         # Select the QasmSimulator from the Aer provider
         self.simulator = Aer.get_backend('qasm_simulator')
 
-    def get_dist(self, theta, shots=10000, noise=True, init=True):
+    def get_dist(self, psi, theta, shots=10000, noise=True, init=True):
         # reset to new circuit
+        self.q = QuantumRegister(self.n)
+        self.c = ClassicalRegister(self.n)
+        self.qc = QuantumCircuit(self.q, self.c)
+
+        self.qc.initialize(psi, self.sq)
+        self._qft_inv()
+
+        # Select the statevector simulator for noise-free simulation
+        simulator = Aer.get_backend('statevector_simulator')
+        self.psi = execute(self.qc, simulator).result().get_statevector()
+
+        # ------------------------------------------------------------- #
+
         self.q = QuantumRegister(n)
         self.c = ClassicalRegister(n)
         self.qc = QuantumCircuit(self.q, self.c)
