@@ -31,7 +31,7 @@ class Denoiser():
         self.c = ClassicalRegister(self.n)
         self.qc = QuantumCircuit(self.q, self.c)
 
-        self.qc.initialize(psi, self.sq)
+        self.qc.initialize(psi, self.q)
         self._qft_inv()
 
         # Select the statevector simulator for noise-free simulation
@@ -40,8 +40,8 @@ class Denoiser():
 
         # ------------------------------------------------------------- #
 
-        self.q = QuantumRegister(n)
-        self.c = ClassicalRegister(n)
+        self.q = QuantumRegister(self.n)
+        self.c = ClassicalRegister(self.n)
         self.qc = QuantumCircuit(self.q, self.c)
         
         # run noisy part of circuit
@@ -56,7 +56,8 @@ class Denoiser():
         else:
             result = execute(self.qc, self.simulator, shots=shots).result()
 
-        return result.get_counts()
+        counts = result.get_counts()
+        return [value/shots for (key, value) in sorted(counts.items())]
 
     def _qft(self):
         """n-qubit QFT on q in circ."""
