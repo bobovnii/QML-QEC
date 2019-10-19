@@ -58,7 +58,7 @@ class Denoiser():
 
         counts = dict()
         for i in range(self.n):
-            dict["{{0:{0}b}}".format(self.n).format(i)] = 0
+            counts["{{0:{0}b}}".format(self.n).format(i)] = 0
         counts = result.get_counts()
 
         return [value/shots for (key, value) in sorted(counts.items())]
