@@ -56,7 +56,11 @@ class Denoiser():
         else:
             result = execute(self.qc, self.simulator, shots=shots).result()
 
+        counts = dict()
+        for i in range(self.n):
+            dict["{{0:{0}b}}".format(self.n).format(i)] = 0
         counts = result.get_counts()
+
         return [value/shots for (key, value) in sorted(counts.items())]
 
     def _qft(self):
