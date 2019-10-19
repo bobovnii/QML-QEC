@@ -31,16 +31,16 @@ class Compare:
 
     def run(self, X=None, Y=None, plot=False):
         """
-		Mock Data
-		X:= list of qubit state input,output pairs [input0,input1,output0,output1],
-		Y:= list of theta parameters for each decoder unitary
+        Mock Data
+        X:= list of qubit state input,output pairs [input0,input1,output0,output1],
+        Y:= list of theta parameters for each decoder unitary
 
-		columnData = ['Sub Circuit', 'Input State', 'Output State', 'Theta']
-		data = [['QFT', [0,1], [1,0], 0.5*math.pi],
-				['QFT', [0.5,0.5], [1,0], 0.5*math.pi],
-				['QFT', [0,1], [0,1], 0],
-				['QFT', [0.5,0.5], [0,1], 0]]
-		"""
+        columnData = ['Sub Circuit', 'Input State', 'Output State', 'Theta']
+        data = [['QFT', [0,1], [1,0], 0.5*math.pi],
+                ['QFT', [0.5,0.5], [1,0], 0.5*math.pi],
+                ['QFT', [0,1], [0,1], 0],
+                ['QFT', [0.5,0.5], [0,1], 0]]
+        """
         if X is None:
             X = [
                 [0, 1, 0, 0.99],
