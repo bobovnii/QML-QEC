@@ -12,7 +12,6 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import Ridge
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import ElasticNet
-from sklearn.metrics import r2_score
 from sklearn.metrics import make_scorer
 
 
@@ -32,7 +31,7 @@ class Compare:
 
     def performance_metric(self, y_true, y_predict):
         # Replace with distance measure scoring
-        score = r2_score(y_true, y_predict)
+        score = np.linalg.norm(y_true-y_predict)
         return score
 
     def run(self, X=None, Y=None, n_splits_val=3, plot=False):
