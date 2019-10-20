@@ -65,14 +65,15 @@ class Denoiser:
         
         self.pm = PassManager(Unroller(['u3', 'cx', 'QFT', 'QFTdg', 'initialize']))
                 
-    def get_dist(self, psi, theta, shots=1, force_noise=False, noise=True, init=True):
+    def get_dist(self, psi, theta, shots=1, force_noise=False, noise=True, init=True, inverse=True):
         # run ideal part of circuit
         self.qc = QuantumCircuit(self.q, self.c)
 
         if init:
             self.qc.initialize(psi, self.q)
-            
-        self.qc.append(self.qft_inv, self.q, [])
+        
+        if inverse:
+            self.qc.append(self.qft_inv, self.q, [])
         
         # run noisy part of circuit
         self._denoise(theta)
@@ -93,7 +94,7 @@ class Denoiser:
         else:
             self.result = execute(self.qc, self.simulator, backend_options={"fusion_enable":True}, shots=shots).result()
 
-        return self.result.data()['snapshots']['statevector']['state']
+        return [[x[0]+1j*x[1] for x in shot] for shot in self.result.data()['snapshots']['statevector']['state']]
 
     def _qft(self):
         """n-qubit QFT on q in circ."""
