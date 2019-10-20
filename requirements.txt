@@ -1,1 +1,2 @@
+qiskit
 numpy==1.17.3

@@ -31,7 +31,7 @@ class Compare:
 
     def performance_metric(self, y_true, y_predict):
         # Replace with distance measure scoring
-        score = np.linalg.norm(y_true-y_predict)
+        score = np.linalg.norm(y_true - y_predict)
         return score
 
     def run(self, X=None, Y=None, n_splits_val=3, plot=False):
@@ -59,7 +59,7 @@ class Compare:
             ]
 
         if Y is None:
-            Y = [0.23, 0.43, 0.3, 0.2, 0.1, 0]
+            Y = [0.23, 0.43, 0.3]
 
         self.set_models({})
 
