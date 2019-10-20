@@ -2,8 +2,14 @@ from qiskit import Aer, IBMQ, execute
 from qiskit.providers.aer import noise
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 from qiskit.tools.visualization import plot_histogram
+from qiskit.tools.monitor import job_monitor
 from qiskit.providers.ibmq.exceptions import IBMQAccountError
+from qiskit.extensions.standard import IdGate
+from qiskit.transpiler.passes import Unroller
+from qiskit.transpiler import PassManager
+import qiskit.extensions.simulator.snapshot
 import math
+import random as rand
 
 
 class Denoiser():
@@ -21,6 +27,8 @@ class Denoiser():
     '''
     def __init__(self, n, APIkey):
         self.n = n
+        self.q = QuantumRegister(self.n)
+        self.c = ClassicalRegister(self.n)
 
         # Load IBMQ backend used for noise modeling
         try:
@@ -28,52 +36,63 @@ class Denoiser():
         except IBMQAccountError as e:
             provider = IBMQ.get_provider(hub='ibm-q')
             print(e)
-        device = provider.get_backend('ibmq_ourense')
+
+        device = provider.get_backend('ibmq_16_melbourne')
         properties = device.properties()
 
-        # Generate noise model from device
-        self.noise_model = noise.device.basic_device_noise_model(properties)
+        # Generate noise model from device, without measurement error
+        self.noise_model = noise.device.basic_device_noise_model(properties, readout_error=False, temperature=100)
 
         # Select the QasmSimulator from the Aer provider
         self.simulator = Aer.get_backend('qasm_simulator')
 
-    def get_dist(self, psi, theta, shots=10000, noise=True, init=True):
-        # reset to new circuit
-        self.q = QuantumRegister(self.n)
-        self.c = ClassicalRegister(self.n)
+        # creatre QFT_inv instruction
+        qc = QuantumCircuit(self.q, self.c, name='QFTdg')
+        for j in range(self.n-1, -1, -1):
+            for k in range(self.n-1, j, -1):
+                qc.cu1(-math.pi/float(2**(k-j)), self.q[k], self.q[j])
+            qc.h(self.q[j])
+        self.qft_inv = qc.to_instruction()
+        
+        # creatre QFT instruction
+        qc = QuantumCircuit(self.q, self.c, name='QFT')
+        for j in range(self.n):
+            qc.h(self.q[j])
+            for k in range(j+1, self.n):
+                qc.cu1(math.pi/float(2**(k-j)), self.q[k], self.q[j])
+        self.qft = qc.to_instruction()
+        
+        self.pm = PassManager(Unroller(['u3', 'cx', 'QFT', 'QFTdg', 'initialize']))
+                
+    def get_dist(self, psi, theta, shots=1, force_noise=False, noise=True, init=True):
+        # run ideal part of circuit
         self.qc = QuantumCircuit(self.q, self.c)
 
-        self.qc.initialize(psi, self.q)
-        self._qft_inv()
-
-        # Select the statevector simulator for noise-free simulation
-        simulator = Aer.get_backend('statevector_simulator')
-        self.psi = execute(self.qc, simulator).result().get_statevector()
-
-        # ------------------------------------------------------------- #
-
-        self.q = QuantumRegister(self.n)
-        self.c = ClassicalRegister(self.n)
-        self.qc = QuantumCircuit(self.q, self.c)
+        if init:
+            self.qc.initialize(psi, self.q)
+            
+        self.qc.append(self.qft_inv, self.q, [])
         
         # run noisy part of circuit
-        if init:
-            self.qc.initialize(self.psi, self.q)
         self._denoise(theta)
+        
+        if force_noise:
+            self._apply_noise()
+
         self._qft()
+        #self.qc.append(self.qft, self.q, [])
+
+        self.qc.snapshot('state')
         self.qc.measure(self.q, self.c)
+        
+        self.qc = self.pm.run(self.qc)
 
         if noise:
-            result = execute(self.qc, self.simulator, noise_model=self.noise_model, shots=shots).result()
+            self.result = execute(self.qc, self.simulator, noise_model=self.noise_model, backend_options={"fusion_enable":True}, shots=shots).result()
         else:
-            result = execute(self.qc, self.simulator, shots=shots).result()
+            self.result = execute(self.qc, self.simulator, backend_options={"fusion_enable":True}, shots=shots).result()
 
-        counts = result.get_counts()
-        for i in range(2**self.n):
-            if "{{0:0{0}b}}".format(self.n).format(i) not in counts:
-                counts["{{0:0{0}b}}".format(self.n).format(i)] = 0
-
-        return [value/shots for (key, value) in sorted(counts.items())]
+        return self.result.data()['snapshots']['statevector']['state']
 
     def _qft(self):
         """n-qubit QFT on q in circ."""
@@ -95,3 +114,8 @@ class Denoiser():
         for j in range(self.n):
             x, y, z = theta[j]
             self.qc.u3(x, y, z, self.q[j])
+
+    def _apply_noise(self):
+        for i in range(self.n):
+            if rand.random() < 0.5:
+                self.qc.z(i)
