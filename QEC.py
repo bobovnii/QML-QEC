@@ -13,19 +13,18 @@ with open(key_path, "r") as f:
 
 n_qubits = 2
 denoiser = Denoiser2(n_qubits, APIkey)
-
-out = denoiser.get_dist([1, 0, 0, 0, 0, 0, 0, 0], [(0, 0, 0), (0, 0, 0), (0, 0, 0)])
+out = denoiser.get_dist([1, 0, 0, 0], [(0, 0, 0), (0, 0, 0)])
 
 
 def func(Theta, x, n=100):
     res = (
         sum(
-            [
+            np.array(
                 denoiser.get_dist(
                     x, [(Theta[0], Theta[1], Theta[2]), (Theta[3], Theta[4], Theta[5])]
                 )
-                for _ in range(n)
-            ]
+            )
+            for i in range(n)
         )
         / n
     )
@@ -45,45 +44,6 @@ def Los3(test):
     return Los2([0, 0, test, 0, 0, 0])
 
 
-def frange(start, stop, step):
-    i = start
-    while i < stop:
-        y = Los3(i, 0, 0)
-        i += step
-
-
-t = np.arange(0.0, 2.0, 0.01)
-
-y = frange(0.0, 2.0, 0.01)
-
-i = -0.2
-j = -0.5
-k = -0.5
-while i < 0.2:
-    j = -0.2
-    while j < 0.2:
-        k = -0.2
-        while k < 0.2:
-            y = Los3([i, j, k])
-            print(i, j, k)
-            print(y)
-
-            k += 0.1
-        j += 0.1
-    i += 0.1
-
-
-boundsNew = [
-    [-np.pi, np.pi],
-    [-np.pi, np.pi],
-    [-np.pi, np.pi],
-    [-np.pi, np.pi],
-    [-np.pi, np.pi],
-    [-np.pi, np.pi],
-    [-np.pi, np.pi],
-    [-np.pi, np.pi],
-    [-np.pi, np.pi],
-]
 res = minimizeCompass(
     Los3, x0=[1], bounds=[[-np.pi, np.pi]], deltatol=0.1, paired=False
 )
@@ -104,7 +64,6 @@ b = {
 
 legend = ["without VQEC", "with VQEC"]
 plot_histogram([a, b], legend=legend)
-
 
 a = {
     "00": func([0, 0, 0, 0, 0, 0], [1, 0, 0, 0])[0],
