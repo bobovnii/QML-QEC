@@ -12,8 +12,8 @@ import math
 import random as rand
 
 
-class Denoiser():
-    '''
+class Denoiser:
+    """
         Initialize class as:
             denoiser = Denoiser(n, APIKEY)
                 where n is the number of qubits, APIKEY is your key from your ibmq experience account
@@ -24,7 +24,8 @@ class Denoiser():
                 where psi is the input state in the same format as above, e.g. [1,0,0,0] for two qubits,
                     and theta are the parameters to the denoiser circuit, as a list of tuples (x, y, z)
                     specifiying the unitary correction, one tuple for each qubit
-    '''
+    """
+
     def __init__(self, n, APIkey):
         self.n = n
         self.q = QuantumRegister(self.n)
@@ -34,7 +35,7 @@ class Denoiser():
         try:
             provider = IBMQ.enable_account(APIkey)
         except IBMQAccountError as e:
-            provider = IBMQ.get_provider(hub='ibm-q')
+            provider = IBMQ.get_provider(hub="ibm-q")
             print(e)
 
         device = provider.get_backend('ibmq_16_melbourne')
@@ -44,7 +45,7 @@ class Denoiser():
         self.noise_model = noise.device.basic_device_noise_model(properties, readout_error=False, temperature=100)
 
         # Select the QasmSimulator from the Aer provider
-        self.simulator = Aer.get_backend('qasm_simulator')
+        self.simulator = Aer.get_backend("qasm_simulator")
 
         # creatre QFT_inv instruction
         qc = QuantumCircuit(self.q, self.c, name='QFTdg')
@@ -98,15 +99,15 @@ class Denoiser():
         """n-qubit QFT on q in circ."""
         for j in range(self.n):
             self.qc.h(self.q[j])
-            for k in range(j+1, self.n):
-                self.qc.cu1(math.pi/float(2**(k-j)), self.q[k], self.q[j])
+            for k in range(j + 1, self.n):
+                self.qc.cu1(math.pi / float(2 ** (k - j)), self.q[k], self.q[j])
             self.qc.barrier()
 
     def _qft_inv(self):
         """n-qubit QFT on q in circ."""
-        for j in range(self.n-1, -1, -1):
-            for k in range(self.n-1, j, -1):
-                self.qc.cu1(-math.pi/float(2**(k-j)), self.q[k], self.q[j])
+        for j in range(self.n - 1, -1, -1):
+            for k in range(self.n - 1, j, -1):
+                self.qc.cu1(-math.pi / float(2 ** (k - j)), self.q[k], self.q[j])
             self.qc.h(self.q[j])
             self.qc.barrier()
 
