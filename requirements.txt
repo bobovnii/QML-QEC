@@ -48,7 +48,7 @@ ndg-httpsclient==0.5.1
 nest-asyncio==1.0.0
 networkx==2.4
 noisyopt==0.2.2
-notebook==6.0.1
+notebook==6.1.5
 ntlm-auth==1.4.0
 numpy==1.17.3
 pandas==0.25.2
