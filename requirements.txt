@@ -50,7 +50,7 @@ networkx==2.4
 noisyopt==0.2.2
 notebook==6.0.1
 ntlm-auth==1.4.0
-numpy==1.17.3
+numpy==1.22.0
 pandas==0.25.2
 pandocfilters==1.4.2
 parso==0.5.1
